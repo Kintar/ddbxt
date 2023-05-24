@@ -1,0 +1,25 @@
+{
+  "name": "ddbxt",
+  "version": "1.0.0",
+  "description": "Extentions and helpers for the Amazon DynamoDB library",
+  "scripts": {
+    "release": "npx standard-version release",
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kintar/ddbxt.git"
+  },
+  "author": "Alec Lanter <kintar1900@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Kintar/ddbxt/issues"
+  },
+  "homepage": "https://github.com/Kintar/ddbxt#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^17.6.3",
+    "@commitlint/config-conventional": "^17.6.3",
+    "husky": "^8.0.0",
+    "standard-version": "^9.5.0"
+  }
+}
