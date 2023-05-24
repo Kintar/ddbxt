@@ -85,6 +85,7 @@ func TestAttributeValuesEqual_Lists(t *testing.T) {
 	assert.Equal(t, false, AttributeValuesEqual(val1, val2))
 }
 
+// TODO: I have a nagging voice that tells me this test is naive. Should probably come back to this later.
 func TestAttributeValuesEqual_Maps(t *testing.T) {
 	type NestedStruct struct {
 		Boogie bool

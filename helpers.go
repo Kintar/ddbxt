@@ -2,28 +2,9 @@ package ddbxt
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 )
-
-// FindUpdates accepts two map[string]types.AttributeValue and returns a new map containing only those values from src
-// which would update values in dest. Keys that are not shared between the two maps are ignored.
-func FindUpdates(src, dest map[string]types.AttributeValue) map[string]types.AttributeValue {
-	result := make(map[string]types.AttributeValue, len(src))
-	// Iterate over all the members of src
-	for k, v1 := range src {
-		// If the value doesn't exist in dest, just skip it
-		if v2, ok := dest[k]; !ok {
-			continue
-		} else {
-			if AttributeValuesEqual(v1, v2) {
-				continue
-			}
-		}
-		result[k] = v1
-	}
-
-	return result
-}
 
 // AttributeValuesEqual compares the contents of two types.AttributeValue and returns true if they are equal.
 // If both values are lists or maps with the same length, this function will recurse into their contents.
@@ -127,4 +108,40 @@ func AttributeValuesEqual(v1, v2 types.AttributeValue) bool {
 	}
 
 	return false
+}
+
+const listFmt = "%s.%s[%d]"
+
+// FlattenAv accepts a types.AttributeValue and builds a map of its contents. The keys of the new map depend on the
+// type of the incoming AttributeValue.
+// - For slice types and AttributeValueMemberL, the keys are <currentPath>[index]
+// - For AttributeValueMemberM, this function will recurse and the keys are <currentPath>.key[.subKey[.subKey...]]
+// - For all other values, a map containing a single entry with the original value keyed as <currentPath> is returned.
+func FlattenAv(v types.AttributeValue, path string) map[string]types.AttributeValue {
+	result := make(map[string]types.AttributeValue)
+	switch val := v.(type) {
+	case *types.AttributeValueMemberM:
+		for k, v := range val.Value {
+			childPath := k
+			if path != "" {
+				childPath = fmt.Sprintf("%s.%s", path, childPath)
+			}
+			subResult := FlattenAv(v, childPath)
+			for kk, vv := range subResult {
+				result[kk] = vv
+			}
+		}
+	case *types.AttributeValueMemberL:
+		for i, v := range val.Value {
+			childPath := fmt.Sprintf("%s[%d]", path, i)
+			subResult := FlattenAv(v, childPath)
+			for kk, vv := range subResult {
+				result[kk] = vv
+			}
+		}
+	default:
+		result[path] = v
+	}
+
+	return result
 }
