@@ -76,8 +76,18 @@ func AttributeValuesEqual(v1, v2 types.AttributeValue) bool {
 			if len(val1.Value) != len(val2.Value) {
 				return false
 			}
-			result := FindUpdates(val1.Value, val2.Value)
-			return len(result) == 0
+			allEquivalent := true
+			for k, v1 := range val1.Value {
+				if v2, ok := val2.Value[k]; !ok {
+					return false
+				} else {
+					allEquivalent = allEquivalent && AttributeValuesEqual(v1, v2)
+					if !allEquivalent {
+						return false
+					}
+				}
+			}
+			return allEquivalent
 		}
 	case *types.AttributeValueMemberNULL:
 		if val2, ok := v2.(*types.AttributeValueMemberNULL); ok {
